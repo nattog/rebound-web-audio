@@ -3,7 +3,7 @@ const volume = -16;
 
 const notes = ["a", "b", "c", "d", "e", "f", "g"];
 
-const octaves = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+const octaves = [0, 1, 2, 3, 4, 5];
 
 // The synth we'll use for audio
 let synth;
@@ -42,6 +42,7 @@ let balls = [];
 let cur_ball = 0;
 let scale_notes = [];
 let note_queue = [];
+let note_off_queue = [];
 
 const min_note = 0;
 const max_note = 127;
@@ -94,9 +95,10 @@ function updateball(b) {
 
 const enqueue_note = (b, z) => {
   let n = parseInt(b.n[1]);
-  n = z === 0 ? n + 1 : n - 1;
+  n = z == 0 ? n + 1 : n - 1;
   n = n < 1 ? 1 : n;
-  note = b.n[0].concat(n);
+
+  n = b.n[0].concat(n);
   note_queue.push(n);
 };
 
@@ -164,7 +166,7 @@ function play_notes() {
   // play queued notes
   while (note_queue.length > 0) {
     n = note_queue.shift();
-    if (!isNaN(n[1])) {
+    if (!isNaN(n.slice(1))) {
       freq = Tone.Midi(n).toFrequency();
       synth.triggerAttackRelease(freq, "4n");
     }
@@ -192,30 +194,9 @@ function draw() {
   stroke(255);
   noFill();
 
-  // Get time in seconds
-  const time = millis() / 0.125;
-
-  // How long we want the loop to be (of one full rotation)
-  const duration = 0.1;
-
-  // Get a 'playhead' from 0..1
-  // We use modulo to keep it within 0..1
-  const playhead = (time / duration) % 1;
-
   balls.forEach((i, index) => updateball(i));
-
-  // Center of screen
-  const x = width / 2;
-  const y = height / 2;
-
-  // Size of rectangle, relative to screen size
-  const size = dim * 0.5;
-
-  // Save transforms
-  push();
 
   balls.forEach((i, index) => draw_ball(i, index == cur_ball));
   play_notes();
   // Restore transforms
-  pop();
 }
