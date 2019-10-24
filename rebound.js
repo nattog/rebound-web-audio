@@ -5,6 +5,16 @@ const notes = ["a", "b", "c", "d", "e", "f", "g"];
 
 const octaves = [0, 1, 2, 3, 4, 5];
 
+let display_info = true;
+let display_note = false;
+
+let info = {
+  add_delete: "-  = : delete / add ball",
+  bracket: "[  ]  : select ball",
+  note: `'  \\  : change note`,
+  help: "h    : toggle info"
+};
+
 // The synth we'll use for audio
 let synth;
 
@@ -12,13 +22,16 @@ let synth;
 function setup() {
   createCanvas(windowWidth, windowHeight);
 
+  textSize(35);
+  textAlign(LEFT, TOP);
+
   // Make the volume quieter
   Tone.Master.volume.value = volume;
 
   // Setup a synth with ToneJS
   synth = new Tone.PolySynth({
     oscillator: {
-      type: "triangle"
+      type: "square"
     }
   });
   reverb = new Tone.JCReverb(0.7).connect(Tone.Master);
@@ -128,7 +141,13 @@ const change_note = dir => {
   }
   octave_value = isNaN(parseInt(octave_value)) ? 2 : octave_value;
   const new_note = note_value.concat(octave_value);
+  display_note = true;
+  setTimeout(switch_display_note, 1000);
   return new_note;
+};
+
+const switch_display_note = () => {
+  display_note = false;
 };
 
 const enact_command = e => {
@@ -159,6 +178,8 @@ const enact_command = e => {
       balls[cur_ball].n = change_note("up");
     }
     break;
+  case "KeyH":
+    display_info = !display_info;
   }
 };
 
@@ -189,7 +210,6 @@ function draw() {
     ellipse(b.x, b.y, r);
   };
 
-  // Set up stroke and disable fill
   strokeJoin(ROUND);
   stroke(255);
   noFill();
@@ -198,5 +218,19 @@ function draw() {
 
   balls.forEach((i, index) => draw_ball(i, index == cur_ball));
   play_notes();
-  // Restore transforms
+
+  if (display_note) {
+    strokeWeight(1);
+    text(balls[cur_ball].n, 10, 50);
+    stroke(255);
+  }
+
+  if (display_info) {
+    strokeWeight(1);
+    text(info.add_delete, 10, 90);
+    text(info.bracket, 10, 140);
+    text(info.note, 10, 190);
+    text(info.help, 10, 240);
+    stroke(255);
+  }
 }
